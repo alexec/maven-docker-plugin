@@ -4,9 +4,12 @@ import com.alexecollins.docker.orchestration.DockerOrchestrator;
 import com.alexecollins.docker.orchestration.model.Credentials;
 import com.alexecollins.docker.orchestration.util.TextFileFilter;
 import com.alexecollins.docker.util.MavenLogAppender;
+
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.DockerException;
+import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.core.DockerClientImpl;
 import com.kpelykh.docker.client.BuildFlag;
-import com.kpelykh.docker.client.DockerClient;
-import com.kpelykh.docker.client.DockerException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -102,8 +105,8 @@ abstract class AbstractDockerMojo extends AbstractMojo {
 
         try {
             final DockerClient docker = dockerClient();
-            getLog().info("Docker version " + docker.version().getVersion());
-            doExecute(new DockerOrchestrator(docker, src(), workDir(), projDir(), prefix, credentials(),
+            getLog().info("Docker version " + docker.versionCmd().exec().getVersion());
+            doExecute(new DockerOrchestrator(docker, src(), workDir(), projDir(), prefix,
                     TextFileFilter.INSTANCE, properties, buildFlags()));
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), e);
@@ -122,13 +125,14 @@ abstract class AbstractDockerMojo extends AbstractMojo {
 	}
 
 	private DockerClient dockerClient() throws DockerException {
-        return version != null
-                ? new DockerClient(host.toString(), version)
-                : new DockerClient(host.toString());
-    }
-
-    private Credentials credentials() {
-        return (username != null || password != null || email != null) ? new Credentials(username, password, email) : null;
+        DockerClientImpl dockerClient = new DockerClientImpl(
+                new DockerClientConfig.DockerClientConfigBuilder()
+                        .withEmail(email)
+                        .withUsername(username)
+                        .withPassword(password)
+                        .withUri(host.toString())
+                        .withVersion(version).build());
+        return dockerClient;
     }
 
     private Properties properties() {
