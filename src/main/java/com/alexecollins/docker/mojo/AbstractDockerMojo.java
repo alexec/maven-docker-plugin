@@ -1,13 +1,17 @@
 package com.alexecollins.docker.mojo;
 
 import com.alexecollins.docker.orchestration.DockerOrchestrator;
+import com.alexecollins.docker.orchestration.OrchestrationException;
 import com.alexecollins.docker.orchestration.model.BuildFlag;
+import com.alexecollins.docker.orchestration.model.Conf;
+import com.alexecollins.docker.orchestration.util.Filters;
 import com.alexecollins.docker.orchestration.util.TextFileFilter;
 import com.alexecollins.docker.util.MavenLogAppender;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -16,6 +20,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Properties;
@@ -97,15 +103,21 @@ abstract class AbstractDockerMojo extends AbstractMojo {
         }
 
         // not great eh
-        final Properties properties = properties();
+        final Properties projectPropertis = properties();
 
-        getLog().info("properties filtering supported for " + properties.keySet());
+        getLog().info("properties filtering supported for system environment variables and " + projectPropertis.keySet());
+
+        Properties filteredProps = new Properties();
+        filteredProps.putAll(System.getenv());
+        filteredProps.putAll(System.getProperties());
+        filteredProps.putAll(projectPropertis);
+
 
         try {
             final DockerClient docker = dockerClient();
             getLog().info("Docker version " + docker.versionCmd().exec().getVersion());
-            doExecute(new DockerOrchestrator(docker, src(), workDir(), projDir(), prefix,
-                    TextFileFilter.INSTANCE, properties, buildFlags()));
+            Filters.copyAndFilterSourceFiles(src(), workDir(), projDir(), TextFileFilter.INSTANCE, filteredProps);
+            doExecute(new DockerOrchestrator(docker, workDir(), prefix, buildFlags()));
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
