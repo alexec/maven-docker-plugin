@@ -1,5 +1,18 @@
 package com.alexecollins.docker.mojo;
 
+import java.io.File;
+import java.nio.file.FileSystems;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
+
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
+
 import com.alexecollins.docker.orchestration.DockerOrchestrator;
 import com.alexecollins.docker.orchestration.ExcludeFilter;
 import com.alexecollins.docker.orchestration.model.BuildFlag;
@@ -10,17 +23,6 @@ import com.github.dockerjava.api.command.VersionCmd;
 import com.github.dockerjava.api.model.Version;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
-
-import java.io.File;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
 
 abstract class AbstractDockerMojo extends AbstractMojo {
 
@@ -39,7 +41,7 @@ abstract class AbstractDockerMojo extends AbstractMojo {
     /**
      * Where to look for directories containing Dockerfile and conf.yml
      */
-    @Parameter(defaultValue = "src/main/docker", property = "docker.src")
+    @Parameter(defaultValue = "${project.build.directory}/docker", property = "docker.src")
     private String src;
 
     /**
@@ -280,7 +282,7 @@ abstract class AbstractDockerMojo extends AbstractMojo {
     }
 
     private File src() {
-        return new File(projDir(), src);
+        return FileSystems.getDefault().getPath(src).isAbsolute() ? new File(src): new File(projDir(), src);
     }
 
     protected abstract void doExecute(DockerOrchestrator orchestrator) throws Exception;
