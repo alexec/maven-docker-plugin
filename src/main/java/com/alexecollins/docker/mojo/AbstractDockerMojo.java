@@ -139,6 +139,18 @@ abstract class AbstractDockerMojo extends AbstractMojo {
     @Parameter(defaultValue = "true", property = "docker.versionAutoDetect")
     private boolean versionAutoDetect;
 
+    /**
+     * Build and start container in multiple threads
+     */
+    @Parameter(defaultValue = "false", property = "docker.parallelStart")
+    protected boolean parallelStart;
+
+    /**
+     * Thread pool size for starting and building container in multiple threads, applicable only when parallelStart is true
+     */
+    @Parameter(defaultValue = "8", property = "docker.threadCount")
+    protected int threadCount;
+
     @Component
     private MavenProject project;
 

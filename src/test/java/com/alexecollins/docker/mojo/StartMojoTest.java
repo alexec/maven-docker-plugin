@@ -62,7 +62,7 @@ public class StartMojoTest extends MojoTestSupport {
 
         // then
         verify(startMojo).doExecute(mockDockerOrchestrator);
-        verify(mockDockerOrchestrator).start();
+        verify(mockDockerOrchestrator).startAsync();
 
         Properties projectProperties = startMojo.getProject().getProperties();
 
