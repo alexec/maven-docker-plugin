@@ -7,9 +7,9 @@
         <version>7</version>
     </parent>
 
-    <groupId>com.alexecollins.docker</groupId>
+    <groupId>com.alexecollins.kghimire.docker</groupId>
     <artifactId>docker-maven-plugin</artifactId>
-    <version>2.11.25-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>maven-plugin</packaging>
 
     <name>Docker Maven Plugin</name>
@@ -85,9 +85,9 @@
         </dependency>
         <!-- order important! -->
         <dependency>
-            <groupId>com.alexecollins.docker</groupId>
+            <groupId>com.alexecollins.kghimire.docker</groupId>
             <artifactId>docker-java-orchestration-core</artifactId>
-            <version>2.11.30-SNAPSHOT</version>
+            <version>1.0.0</version>
         </dependency>
         <!-- plugin -->
         <dependency>
@@ -216,7 +216,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
-                <version>3.2</version>
+                <version>3.3</version>
                 <configuration>
                     <goalPrefix>docker</goalPrefix>
                     <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
@@ -227,12 +227,14 @@
                         <goals>
                             <goal>descriptor</goal>
                         </goals>
+                        <phase>process-classes</phase>
                     </execution>
                     <execution>
                         <id>help-goal</id>
                         <goals>
                             <goal>helpmojo</goal>
                         </goals>
+                        <phase>process-classes</phase>
                     </execution>
                 </executions>
             </plugin>
